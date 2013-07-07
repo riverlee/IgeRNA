@@ -74,12 +74,14 @@ if( ! -e $refgenome){
 info("Loading refGene to get TSS ...",1);
 my %refgene;
 loadRefGene($refgene,\%refgene);
+info("There are ".scalar(keys %refgene)." Genes",1);
 
 #refineRefGene(\%refgene);
 
 info("Loading genome sequeneces ...",1);
 my %genome; 
 loadGenome($refgenome,\%genome);
+info("There are ".scalar(keys %genome)," Chromosomes",1);
 #
 info("Output promoter sequences ...",1);
 my $output="${build}_promoter_upstream${upstreamExtend}_downstream${downstreamExtend}.fa";
@@ -96,7 +98,34 @@ sub getPromoter{
     # the promoter may not changes too much
     foreach my $gene (sort keys %{$ref}){
         my @NMIDs = sort keys %{$ref->{$gene}};
-        next if (scalar(@NMIDs) ==1 );
+        if (scalar(@NMIDs) ==1 ){
+                my $nmid= $NMIDs[0];
+                my $strand = $ref->{$gene}->{$nmid}->{strand};
+                my $tss = $ref->{$gene}->{$nmid}->{TSS};
+                my $chr = $ref->{$gene}->{$nmid}->{chr};
+
+                my $start;
+                my $seq="";
+                if($strand eq "+"){
+                    $start = $tss - $upstreamExtend;
+                    $start = 0 if ($start <1);
+                    $seq = substr($genomeref->{$chr},$start,$upstreamExtend+$downstreamExtend);
+                }else{
+                    $start = $tss - $downstreamExtend;
+                    $start = 0 if ($start <1);
+                    $seq = substr($genomeref->{$chr},$start,$upstreamExtend+$downstreamExtend);
+                    # DO complemetary
+                    $seq = reverse_complement($seq); 
+                }
+
+                # for the sequence name
+                my $end = $start+$upstreamExtend+$downstreamExtend;
+                $seq = formatSeq($seq,50);
+                my $header = "$gene|$nmid";
+                $header.="|$strand|TSS=$chr:$tss|Range=$chr:$start-$end";
+                print OUT ">$header\n$seq\n";
+                next;
+        }
         my %tmp;
         #my %keep;
         foreach my $nm (@NMIDs){
@@ -122,7 +151,7 @@ sub getPromoter{
                 # Get sequences
                 my $seq="";
                 my $start;
-                next if (!exists($genomeref->{$chr}));
+               # next if (!exists($genomeref->{$chr}));
                 if($strand eq "+"){
                     $start = $tss - $upstreamExtend;
                     $start = 0 if ($start <1);
