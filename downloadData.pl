@@ -31,18 +31,48 @@ my $dirname="data";
 mkdir $dirname unless ( -d $dirname);
 chdir $dirname;
 
+# refGene.txt file name and chromosome name
 my $outfile="${build}_refGene.txt.gz";
 my $url="http://hgdownload.cse.ucsc.edu/goldenPath/$build/database/refGene.txt.gz";
 
+my $outfile2="${build}_genome.fa";
+my $url2="http://hgdownload.cse.ucsc.edu/goldenPath/$build/bigZips/chromFa.tar.gz";
+
 # Download the file
+info("Download refGene.txt.gz file...",0);
 my $rc = getstore($url,$outfile);
+if(is_success($rc)){
+    print "OK\n";
+}else{
+    print "Failed \n";
+    exit(1);
+}
 
 # unzip the file
 `gunzip  $outfile`;
 
+#
+info("Download chromFa.tar.gz file...",0);
+my $rc2 = getstore($url2,"chromFa.tar.gz");
+if(is_success($rc2)){
+    print "OK\n";
+}else{
+    print "Failed \n";
+    exit(1);
+}
+
+# unzip the file
+`tar -zxvf chromFa.tar.gz`;
+`cat chr*.fa >$outfile2`;
+`rm -rf chromFa.tar.gz`;
 
 
 
+sub info{
+    my ($str,$flag) = @_;
+    print "[",scalar(localtime),"] $str";
+    print "\n" if ($flag);
+}
 sub help{
     my ($flag) = @_;
     print <<USAGE;
