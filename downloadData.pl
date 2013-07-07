@@ -9,6 +9,28 @@ use warnings;
 use Getopt::Long;
 use LWP::Simple;
 
+##############################
+# Get the script folder
+$0 =~ /^(.*)\//;
+my $homeDir = $1;
+if (!defined($homeDir) || $homeDir eq '') {
+    $homeDir = ".";
+}
+$homeDir .= "/";
+my $pwd = '';
+unless ($homeDir =~ /^\//) {
+    #`pwd > .ls`;
+    open IN, "pwd|";
+    while (<IN>) {
+        chomp;
+        $pwd = $_;
+        last;
+    }
+    close IN;
+    $homeDir = $pwd . "/" . $homeDir;
+}
+chdir($homeDir) or die $!;
+##################################
 
 # Download the refGene table from UCSC
 # http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/

@@ -304,12 +304,13 @@ sub info{
 sub help{
     my ($flag) = @_;
     print <<USAGE;
-Usage: downloadData.pl -build <hg19> -h
+Usage: preparePromoter.pl -build [hg19] -up [2000] -down [500] -h
       -build either hg19,hg18 or hg17, default is hg19
+      -up    upstream of TSS, default is 2000bp
+      -down  downstream of TSS default is 500bp
       -h     display this help
 ########################################################
-# This program will download refGene.txt and genome refernce
-# sequences from UCSC and store them in the  data folder
+# Prepare the promoter sequences in fasta format
 ########################################################
 USAGE
     exit(1) if($flag);
